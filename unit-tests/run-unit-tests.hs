@@ -1,22 +1,26 @@
 module Main ( main ) where
 
-import Prelude hiding ( catch )
+import Prelude hiding (catch)
 
-import Control.Exception.Extensible ( ArithException(..) )
-import Control.Monad.Catch as MC
+import Control.Exception.Extensible (ArithException (..))
+import Control.Monad.Catch          as MC
 
-import Control.Monad       ( liftM, when )
+import Control.Monad (liftM, when)
 
-import Control.Concurrent ( forkIO )
+import Control.Concurrent      (forkIO)
 import Control.Concurrent.MVar
 
-import System.IO
-import System.FilePath
+import qualified Data.Complex as Complex
+
 import System.Directory
 import System.Exit
+import System.FilePath
+import System.IO
 
+import qualified TEST_A
+import qualified TEST_B
 
-import Test.HUnit ( (@?=), (@?) )
+import           Test.HUnit ((@?), (@?=))
 import qualified Test.HUnit as HUnit
 
 import Language.Haskell.Interpreter
@@ -197,7 +201,6 @@ test_catch = TestCase "catch" [] $ do
           action = do s <- eval "1 `div` 0 :: Int"
                       return $! s
 
-
 test_only_one_instance :: TestCase
 test_only_one_instance = TestCase "only_one_instance" [] $ do
     liftIO $ do
@@ -209,6 +212,39 @@ test_only_one_instance = TestCase "only_one_instance" [] $ do
         _ <- forkIO $ concurrent >> return ()
         readMVar r @?  "concurrent instance did not fail"
 
+test_interpret_respects_imports :: TestCase
+test_interpret_respects_imports = TestCase "interpret_respects_imports" [] $ do
+  setImportsQ [("Prelude", Just "FooBar"), ("Data.Complex", Nothing)]
+  interpret "()" (as :: ()) @@?= ()
+  interpret "FooBar.True" (as :: Bool) @@?= True
+  interpret "1 :+ 2" (as :: Complex.Complex Double) @@?= (1 Complex.:+ 2)
+
+test_interpret_module_duplication_with_Main :: TestCase
+test_interpret_module_duplication_with_Main =
+  TestCase "interpret_module_duplication_with_Main" [mod_file] $ do
+    liftIO setup
+    loadModules [mod_file]
+    setTopLevelModules ["Main"]
+    interpret "1 :+ 2" (as :: Complex.Complex Double) @@?= (1 Complex.:+ 2)
+  where
+    mod_name = "TEST_MOD_DUPE"
+    mod_file = mod_name <.> "hs"
+    setup = writeFile mod_file $
+            unlines [ "module Main where"
+                    , "import Data.Complex"]
+
+test_interpret_resolve_type_name_collision :: TestCase
+test_interpret_resolve_type_name_collision =
+  TestCase "interpret_resolve_type_name_collision" [] $ do
+    loadModules [mod_file_1, mod_file_2]
+    setImportsQ [(mod_name_1, Just "A"), (mod_name_2, Just "B")]
+    interpret "A.TEST_A" (as :: TEST_A.Dat) @@?= TEST_A.TEST_A
+    interpret "B.TEST_B" (as :: TEST_B.Dat) @@?= TEST_B.TEST_B
+  where
+    mod_name_1 = "TEST_A"
+    mod_name_2 = "TEST_B"
+    mod_file_1 = "unit-tests" </> mod_name_1 <.> "hs"
+    mod_file_2 = "unit-tests" </> mod_name_2 <.> "hs"
 
 tests :: [TestCase]
 tests = [test_reload_modified
@@ -225,6 +261,9 @@ tests = [test_reload_modified
         ,test_search_path_dot
         ,test_catch
         ,test_only_one_instance
+        ,test_interpret_respects_imports
+        ,test_interpret_resolve_type_name_collision
+        ,test_interpret_module_duplication_with_Main
         ]
 
 main :: IO ()

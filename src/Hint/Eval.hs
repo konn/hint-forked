@@ -47,7 +47,6 @@ unsafeInterpret expr strOrRep = sandboxed go expr
             failOnParseError parseExpr e
             --
             type_str <- either return mkTypeRepAbsolute strOrRep
-                
             let expr_typesig = concat [parens e, " :: ", type_str]
             expr_val <- mayFail $ runGhc1 Compat.compileExpr expr_typesig
             --

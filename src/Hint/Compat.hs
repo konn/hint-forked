@@ -111,6 +111,7 @@ getContextNames :: GHC.GhcMonad m => m([String], [String])
 getContextNames = fmap (\(as,bs) -> (map name as, map decl bs)) getContext
     where name = GHC.moduleNameString . GHC.moduleName
           decl = GHC.moduleNameString . GHC.unLoc . GHC.ideclName
+
 #endif
 
 #if __GLASGOW_HASKELL__ < 702

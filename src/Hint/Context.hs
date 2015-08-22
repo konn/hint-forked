@@ -292,9 +292,10 @@ addImportsQ ms =
                    else return Nothing
        --
        pm <- maybe (return []) (findModule . pm_name >=> return . return) new_pm
-       (old_top_level, _) <- runGhc Compat.getContext
+       (old_top_level, old_unqual_0) <- runGhc Compat.getContext
        let new_top_level = pm ++ old_top_level
-       runGhc2 Compat.setContextModules new_top_level unqual_mods
+           new_unqual_mods = old_unqual_0 ++ map (GHC.simpleImportDecl . GHC.moduleName) unqual_mods
+       runGhc2 Compat.setContext new_top_level new_unqual_mods
        --
        onState (\s ->s{qual_imports = qual_imports s ++ quals})
 
