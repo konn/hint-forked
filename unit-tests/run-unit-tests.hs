@@ -246,6 +246,15 @@ test_interpret_resolve_type_name_collision =
     mod_file_1 = "unit-tests" </> mod_name_1 <.> "hs"
     mod_file_2 = "unit-tests" </> mod_name_2 <.> "hs"
 
+test_interpret_canonicalize_type_correctly :: TestCase
+test_interpret_canonicalize_type_correctly =
+  TestCase "interpret_canonicalize_types_correctly" [] $ do
+    interpret "[]" (as :: [()]) @@?= ([] :: [()])
+    (interpret "(():)" (as :: [()] -> [()]) <*> pure [])
+      @@?= [()]
+    interpret "(1,2,3)" (as :: (Int, Double, Float))
+      @@?= (1,2,3)
+
 tests :: [TestCase]
 tests = [test_reload_modified
         ,test_lang_exts
@@ -264,6 +273,7 @@ tests = [test_reload_modified
         ,test_interpret_respects_imports
         ,test_interpret_resolve_type_name_collision
         ,test_interpret_module_duplication_with_Main
+        ,test_interpret_canonicalize_type_correctly
         ]
 
 main :: IO ()
