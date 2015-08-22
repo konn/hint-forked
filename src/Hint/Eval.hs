@@ -70,13 +70,14 @@ mkTypeRepAbsolute rep = do
   where
     isFun con = con == (typeRepTyCon $ Data.Typeable.typeOf (succ :: Int -> Int))
     isTuple con = tyConModule con == "GHC.Tuple"
+    isList con = con == (typeRepTyCon $ Data.Typeable.typeOf [()])
     procRep in_rep = do
       let (con, args) = splitTyConApp in_rep
       new_con <- procCon con
       new_args <- mapM procRep args
       return $ mkTyConApp new_con new_args
     procCon con
-      | isFun con || isTuple con = return con
+      | isFun con || isTuple con || isList con = return con
       | otherwise = do
         let mod_name = tyConModule con
         mn <- gets $ lookup mod_name
