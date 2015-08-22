@@ -1,3 +1,5 @@
+== This repository is mirror of [my fork](http://hub.darcs.net/konn/hint) on darcs hub of [hub.darcs.net :: jcpetruzza :: hint](http://hub.darcs.net/jcpetruzza/hint). ==
+
 === Description ===
 
 This library defines an Interpreter monad. It allows to load Haskell
