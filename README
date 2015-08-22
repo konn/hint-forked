@@ -1,0 +1,31 @@
+=== Description ===
+
+This library defines an Interpreter monad. It allows to load Haskell
+modules, browse them, type-check and evaluate strings with Haskell
+expressions and even coerce them into values. The library is
+thread-safe and type-safe (even the coercion of expressions to
+values).
+
+It is, esentially, a huge subset of the GHC API wrapped in a simpler
+API.
+
+
+=== Documentation ===
+
+The library cames with haddock documentation you can build
+(see above). Also, check examples/example.hs to see a simple but
+comprehensive example (it must be run from the examples
+directory, since it expects to find the SomeModule.hs file
+located there).
+
+=== Contact  ===
+
+Bug-reports, questions, suggestions and patches are all welcome.
+
+To get a copy of the darcs repository:
+
+darcs get http://hub.darcs.net/jcpetruzza/hint
+
+
+If you report an issue, please send me an email as well, since
+otherwise I get no notifications...
